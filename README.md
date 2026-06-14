@@ -1,4 +1,5 @@
 # Technical Test – Retrieval Augmented Generation & Layout-Aware Text Extraction
+
 Repository ini berisi implementasi solusi untuk **AI Engineer Intern Technical Test** yang terdiri dari dua studi kasus utama:
 
 ## A. Multimodal Retrieval-Augmented Generation (RAG)
@@ -25,26 +26,26 @@ Tujuan utama pendekatan ini adalah memungkinkan teks diedit secara terpisah tanp
 
 ### Framework & API
 
-* FastAPI
-* Uvicorn
-* Pydantic
+- FastAPI
+- Uvicorn
+- Pydantic
 
 ### Tugas A – Multimodal RAG
 
-* Google Gemini
-* LangChain
-* ChromaDB
-* HuggingFace Embeddings (`all-MiniLM-L6-v2`)
-* PDF2Image
-* Pillow
+- Google Gemini
+- LangChain
+- ChromaDB
+- HuggingFace Embeddings (`all-MiniLM-L6-v2`)
+- PDF2Image
+- Pillow
 
 ### Tugas B – Layout-Aware Text Extraction
 
-* OpenCV
-* EasyOCR
-* NumPy
-* HTML & CSS Rendering
-* Inpainting (Telea Method)
+- OpenCV
+- EasyOCR
+- NumPy
+- HTML & CSS Rendering
+- Inpainting (Telea Method)
 
 ---
 
@@ -171,7 +172,7 @@ AI-Engineer-Technical-Test
 │   ├── output
 │   └── samples
 │
-├── docs 
+├── docs
 │   ├── swagger-ui.png
 │   ├── query-result.png
 │   ├── original-slide.png
@@ -192,15 +193,15 @@ Repository ini menyertakan data uji yang digunakan selama proses pengembangan.
 
 ### Tugas A
 
-* Laporan Keuangan Bank Mandiri 2025 (PDF)
+- Laporan Keuangan Bank Mandiri 2025 (PDF)
 
 ### Tugas B
 
-* Sample slide presentation (.jpg)
+- Sample slide presentation (.jpg)
 
 ---
 
-# 🧠 Pendekatan & Metodologi
+# Pendekatan & Metodologi
 
 ## Tugas A – Multimodal Retrieval-Augmented Generation
 
@@ -234,21 +235,21 @@ Answer + Page Citation
 
 Fungsi:
 
-* Upload dokumen PDF
-* Konversi PDF menjadi gambar per halaman
-* Ekstraksi informasi menggunakan Gemini Vision
-* Chunking dokumen
-* Embedding menggunakan model lokal
-* Penyimpanan ke ChromaDB
+- Upload dokumen PDF
+- Konversi PDF menjadi gambar per halaman
+- Ekstraksi informasi menggunakan Gemini Vision
+- Chunking dokumen
+- Embedding menggunakan model lokal
+- Penyimpanan ke ChromaDB
 
 ### Endpoint `/query`
 
 Fungsi:
 
-* Menerima pertanyaan pengguna
-* Melakukan semantic retrieval ke ChromaDB
-* Menyusun jawaban berbasis konteks menggunakan Gemini
-* Menampilkan referensi halaman dokumen sebagai metadata sumber
+- Menerima pertanyaan pengguna
+- Melakukan semantic retrieval ke ChromaDB
+- Menyusun jawaban berbasis konteks menggunakan Gemini
+- Menampilkan referensi halaman dokumen sebagai metadata sumber
 
 ---
 
@@ -288,9 +289,9 @@ Posisi teks dipertahankan berdasarkan bounding box sehingga hasil HTML memiliki 
 
 Sistem mengestimasi atribut visual seperti:
 
-* Ukuran font
-* Warna teks
-* Posisi elemen
+- Ukuran font
+- Warna teks
+- Posisi elemen
 
 untuk meningkatkan kemiripan antara HTML dan slide sumber.
 
@@ -322,7 +323,7 @@ Teks hasil ekstraksi dirender sebagai elemen HTML terpisah sehingga dapat dimodi
 
 ### Original Slide
 
-![Original Slide](docs/original-slide.png)
+![Original Slide](docs/original-slide.jpg)
 
 ### Bounding Box Detection
 
@@ -337,5 +338,7 @@ Teks hasil ekstraksi dirender sebagai elemen HTML terpisah sehingga dapat dimodi
 ![Generated HTML](docs/generated-html.png)
 
 ---
+
 ```
+
 ```

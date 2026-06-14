@@ -12,57 +12,44 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 
-# =================================================================
-# 1. INISIALISASI GLOBAL (Menghindari Cold Start)
-# =================================================================
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
     raise ValueError("GEMINI_API_KEY tidak ditemukan di environment variables!")
 
-# Menginisiasi Gemini dan Model Embedding Lokal
 client = genai.Client(api_key=api_key)
 model_embedding_lokal = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-# Menginisiasi Database Vektor
-direktori_db = "./mandiri_chroma_db"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+direktori_db = os.path.join(BASE_DIR, "mandiri_chroma_db")
 vector_db = Chroma(persist_directory=direktori_db, embedding_function=model_embedding_lokal)
 
-# =================================================================
-# 2. SETUP FASTAPI & PYDANTIC SCHEMA
-# =================================================================
 app = FastAPI(
     title="Mandiri Multimodal RAG API",
     description="API untuk memproses dan tanya-jawab Laporan Keuangan Bank Mandiri",
     version="1.0.0"
 )
 
-# Schema penerima untuk endpoint query
 class RequestPertanyaan(BaseModel):
     pertanyaan: str
 
-# =================================================================
-# 3. ENDPOINT 1: INGESTION (Upload & Process PDF)
-# =================================================================
 @app.post("/ingest")
 async def ingest_dokumen(file: UploadFile = File(...)):
     """
     Endpoint ini akan menerima file PDF, melakukan pemotongan (Chunking), 
     menggunakan VLM untuk ekstraksi, dan menyimpannya ke Vector Database (ChromaDB).
     """
-    if not file.filename.endswith(".pdf"):
+    if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="File harus berupa PDF!")
     
-    # Simpan PDF sementara
     temp_pdf_path = f"temp_{file.filename}"
     with open(temp_pdf_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
     try:
         print("Mulai konversi PDF ke gambar...")
-        # Tambahkan r"..." di depan path agar Windows tidak bingung membaca tanda backslash (\)
-        jalur_poppler = r"C:\poppler\Library\bin"
+        jalur_poppler = os.getenv("POPPLER_PATH")
         halaman_gambar = convert_from_path(temp_pdf_path, dpi=200, poppler_path=jalur_poppler)
         
         dokumen_langchain = []
@@ -78,27 +65,23 @@ async def ingest_dokumen(file: UploadFile = File(...)):
         for i, gambar in enumerate(halaman_gambar):
             print(f"Memproses Halaman {i+1}/{len(halaman_gambar)}...")
             
-            # Simpan halaman sebagai gambar sementara
             temp_img_path = f"temp_page_{i+1}.png"
             gambar.save(temp_img_path, "PNG")
             img_pil = Image.open(temp_img_path)
             
-            # Tembak ke Gemini 2.5 Flash
             response = client.models.generate_content(
-                model='gemini-3.5-flash',
+                model='gemini-3.1-flash-lite',
                 contents=[img_pil, prompt_ekstraksi]
             )
             
             teks_hasil = response.text
             
-            # Gabungkan teks dengan Metadata Halaman
             doc = Document(
                 page_content=teks_hasil,
                 metadata={"page": i + 1, "source": file.filename}
             )
             dokumen_langchain.append(doc)
             
-            # Bersihkan cache gambar halaman dan beri jeda waktu API
             img_pil.close()
             os.remove(temp_img_path)
             time.sleep(5) 
@@ -125,29 +108,23 @@ async def ingest_dokumen(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Terjadi kesalahan saat pemrosesan: {str(e)}")
         
     finally:
-        # Selalu bersihkan file PDF asli agar memori tidak penuh
         if os.path.exists(temp_pdf_path):
             os.remove(temp_pdf_path)
 
-# =================================================================
-# 4. ENDPOINT 2: QUERY (Menjawab Pertanyaan)
-# =================================================================
 @app.post("/query")
 async def tanya_dokumen(payload: RequestPertanyaan):
     """
     Endpoint ini menerima pertanyaan dari user, mencari konteks di ChromaDB,
-    lalu menggunakan Gemini 3.5 Flash untuk menjawabnya beserta sitasi halaman.
+    lalu menggunakan Gemini 3.1 Flash Lite untuk menjawabnya beserta sitasi halaman.
     """
     pertanyaan_user = payload.pertanyaan
     
-    # A. Retrieval (Pencarian dokumen di ChromaDB)
     hasil_pencarian = vector_db.similarity_search(pertanyaan_user, k=15)
     konteks = ""
     for doc in hasil_pencarian:
         halaman = doc.metadata.get('page', 'Tidak diketahui')
         konteks += f"---\n [SUMBER: HALAMAN {halaman}]\n{doc.page_content} \n"
         
-    # B. Generation (Prompting super ketat ke Gemini)
     prompt_rag = f"""
     Kamu adalah asisten AI yang cerdas dan ahli dalam menganalisis dokumen keuangan Bank Mandiri.
     Tugasmu adalah menjawab pertanyaan menggunakan HANYA informasi dari 'Konteks Dokumen' di bawah ini.
@@ -168,7 +145,7 @@ async def tanya_dokumen(payload: RequestPertanyaan):
 
     try:
         response = client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt_rag
         )
         return {

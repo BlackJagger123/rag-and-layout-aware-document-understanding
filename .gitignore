@@ -1,10 +1,22 @@
-# Environments
+# Virtual Environment
 venv/
-env/
+.venv/
 
-# API Keys & Secrets
+# Environment Variables
 .env
 
-# Database & Cache
-mandiri_chroma_db/
+# Python Cache
 __pycache__/
+*.pyc
+*.pyo
+
+# Temporary Files
+temp_*.png
+temp_*.pdf
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
