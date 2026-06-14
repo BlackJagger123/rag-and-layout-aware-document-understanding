@@ -32,7 +32,7 @@ Tujuan utama pendekatan ini adalah memungkinkan teks diedit secara terpisah tanp
 
 ### Tugas A – Multimodal RAG
 
-- Google Gemini
+- Google Gemini 3.1 Flash Lite
 - LangChain
 - ChromaDB
 - HuggingFace Embeddings (`all-MiniLM-L6-v2`)
