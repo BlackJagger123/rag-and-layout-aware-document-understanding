@@ -54,8 +54,7 @@ Tujuan utama pendekatan ini adalah memungkinkan teks diedit secara terpisah tanp
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/USERNAME/REPOSITORY_NAME.git
-
+git clone https://github.com/BlackJagger123/rag-and-layout-aware-document-understanding.git
 cd REPOSITORY_NAME
 ```
 
